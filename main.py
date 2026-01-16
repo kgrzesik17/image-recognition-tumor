@@ -28,12 +28,12 @@ print(f'Liczba wyników negatywnych {len(os.listdir(negative_test))}')
 train_dataset, valid_dataset = image_dataset_from_directory(directory_train, validation_split=0.2,
                                                             subset='both',
                                                             seed=1410,
-                                                            image_size=(225, 225),
+                                                            image_size=(256, 256),
                                                             label_mode='categorical',
                                                             color_mode="rgb")
 
 test_dataset = image_dataset_from_directory(directory_test, seed=1410,
-                                            image_size=(225, 225),
+                                            image_size=(256, 256),
                                             label_mode='categorical',
                                             color_mode="rgb")
 
@@ -52,7 +52,7 @@ for images, labels in train_dataset.take(1):
 # plt.show()
 
 model = Sequential([
-    layers.Rescaling(1.0 / 255, input_shape=(225, 225, 3)),
+    layers.Rescaling(1.0 / 255, input_shape=(256, 256, 3)),
     layers.Conv2D(16, 10, strides=2, padding='same', activation="relu"),
     layers.Conv2D(16, 8, padding='same', activation="relu"),
     layers.BatchNormalization(),
