@@ -48,5 +48,51 @@ for images, labels in train_dataset.take(1):
     plt.imshow(images[i].numpy().astype("uint8"))
     plt.title(class_names[int(np.argmax(labels[i]))])
     plt.axis("off")
-    
+
+# plt.show()
+
+model = Sequential([
+    layers.Rescaling(1.0 / 255, input_shape=(225, 225, 3)),
+    layers.Conv2D(16, 10, strides=2, padding='same', activation="relu"),
+    layers.Conv2D(16, 8, padding='same', activation="relu"),
+    layers.BatchNormalization(),
+    layers.MaxPooling2D(2),
+    layers.Conv2D(16, 7, padding='same', activation="relu"),
+    layers.MaxPooling2D(2),
+    layers.Conv2D(32, 7, padding='same', activation="relu"),
+    layers.MaxPooling2D(2),
+    layers.Conv2D(64, 5, padding='same', activation="relu"),
+    layers.MaxPooling2D(2),
+    layers.Conv2D(128, 5, padding='same', activation="relu"),
+    layers.MaxPooling2D(2),
+    layers.Conv2D(256, 3, padding='same', activation="relu"),
+    layers.MaxPooling2D(2),
+    layers.Flatten(),
+    layers.Dense(128, activation="relu"),
+    layers.Dropout(0.5),
+    layers.Dense(2, activation="softmax")
+    ])
+
+# plot_model(model, show_shapes=True)
+model.summary()
+
+# compiling
+model.compile(optimizer='adam', loss="categorical_crossentropy", metrics=['accuracy'])
+
+
+# learning
+history = model.fit(train_dataset, epochs=30, validation_data=valid_dataset,
+                    batch_size=32)
+
+plt.figure()
+plt.plot(history.history['accuracy'], label='accuracy')
+plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.ylim([0.0, 1])
+plt.legend(loc='lower right')
 plt.show()
+
+result = model.evaluate(test_dataset, return_dict=True)
+
+print(f'Dokładność modelu {round(result["accuracy"]*100,2)}%')
