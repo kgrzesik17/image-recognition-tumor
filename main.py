@@ -36,3 +36,17 @@ test_dataset = image_dataset_from_directory(directory_test, seed=1410,
                                             image_size=(225, 225),
                                             label_mode='categorical',
                                             color_mode="rgb")
+
+class_names = train_dataset.class_names
+print(class_names)
+
+fig, ax = plt.subplots(4, 4, figsize=(10,10))
+
+for images, labels in train_dataset.take(1):
+  for i in range(16):
+    ax = plt.subplot(4,4,i + 1)
+    plt.imshow(images[i].numpy().astype("uint8"))
+    plt.title(class_names[int(np.argmax(labels[i]))])
+    plt.axis("off")
+    
+plt.show()
