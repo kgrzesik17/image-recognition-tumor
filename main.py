@@ -3,10 +3,10 @@ import pandas as pd
 import os
 from matplotlib import pyplot as plt
 from keras.utils import image_dataset_from_directory
-from keras import layers, Model
+from keras import layers
 from keras.models import Sequential
-from keras.metrics import CategoricalAccuracy, Recall
-import tensorflow_datasets as tfds
+from keras.metrics import Recall
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, precision_score, f1_score, balanced_accuracy_score
 
 directory_train = 'BrainTumorDataset/train'
 directory_test = 'BrainTumorDataset/test'
@@ -38,7 +38,6 @@ if max_ratio <= 0.6:
     metric_key = 'accuracy'
 else:
     print("Decision: Data is imbalanced -> Metric: RECALL")
-    # We track Recall as the main metric, but keep accuracy for reference
     selected_metrics = [Recall(name='recall'), 'accuracy']
     metric_key = 'recall'
 
@@ -113,6 +112,9 @@ def create_model_deep_gap():
 
 models_to_run = [create_model_shallow, create_model_standard, create_model_deep_gap]
 
+# variables to track the best model
+best_model = None
+best_score = 0.0
 
 for model_builder in models_to_run:
     model = model_builder()
@@ -140,11 +142,55 @@ for model_builder in models_to_run:
     print(f"\nTEST RESULTS FOR {model.name}:")
     result = model.evaluate(test_dataset, return_dict=True)
     
+    # retrieve the score based on the selected metric key
     if metric_key == 'recall':
+        current_score = result['recall']
         print(f"-> RECALL: {round(result['recall']*100, 2)}%")
         if 'accuracy' in result:
              print(f"-> Accuracy (auxiliary): {round(result['accuracy']*100, 2)}%")
     else:
+        current_score = result['accuracy']
         print(f"-> ACCURACY: {round(result['accuracy']*100, 2)}%")
     
+    # Check if this is the best model so far
+    if current_score > best_score:
+        best_score = current_score
+        best_model = model
+        print(f"*** New Best Model: {model.name} ***")
+
     print("-" * 50)
+
+# final evaluation of the best model
+print(f"\n{'#'*50}")
+print(f"Detailed evaluation for the best model: {best_model.name}")
+print(f"{'#'*50}")
+
+y_true = []
+y_pred = []
+
+print("Generating predictions on Test Set...")
+for images, labels in test_dataset:
+    preds = best_model.predict(images, verbose=0)
+    y_true.extend(np.argmax(labels.numpy(), axis=1))
+    y_pred.extend(np.argmax(preds, axis=1))
+
+cm = confusion_matrix(y_true, y_pred)
+print("\nConfusion Matrix:")
+print(cm)
+
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=class_names)
+disp.plot(cmap=plt.cm.Blues)
+plt.title(f'Confusion Matrix: {best_model.name}')
+plt.show()
+
+# calculate metrics: Precision, BAC, F1-score
+# average='weighted' accounts for class imbalance
+precision = precision_score(y_true, y_pred, average='weighted')
+f1 = f1_score(y_true, y_pred, average='weighted')
+bac = balanced_accuracy_score(y_true, y_pred)
+
+print("\n--- Advanced Metrics ---")
+print(f"Precision (Weighted): {round(precision, 4)}")
+print(f"F1-Score (Weighted):  {round(f1, 4)}")
+print(f"BAC (Balanced Acc.):  {round(bac, 4)}")
+print("-" * 30)
