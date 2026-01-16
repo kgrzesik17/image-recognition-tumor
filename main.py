@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import os
 from matplotlib import pyplot as plt
 from keras.utils import image_dataset_from_directory
@@ -8,6 +7,8 @@ from keras.models import Sequential
 from keras.metrics import Recall
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, precision_score, f1_score, balanced_accuracy_score
 
+
+# reading the data
 directory_train = 'BrainTumorDataset/train'
 directory_test = 'BrainTumorDataset/test'
 
