@@ -24,3 +24,15 @@ print(f'Liczba wyników negatywnych {len(os.listdir(negative_train))}')
 print('Zbiór testowy')
 print(f'Liczba wyników pozytywnych {len(os.listdir(positive_test))}')
 print(f'Liczba wyników negatywnych {len(os.listdir(negative_test))}')
+
+train_dataset, valid_dataset = image_dataset_from_directory(directory_train, validation_split=0.2,
+                                                            subset='both',
+                                                            seed=1410,
+                                                            image_size=(225, 225),
+                                                            label_mode='categorical',
+                                                            color_mode="rgb")
+
+test_dataset = image_dataset_from_directory(directory_test, seed=1410,
+                                            image_size=(225, 225),
+                                            label_mode='categorical',
+                                            color_mode="rgb")
